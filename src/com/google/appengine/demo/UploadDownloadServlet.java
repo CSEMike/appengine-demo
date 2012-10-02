@@ -1,7 +1,6 @@
 package com.google.appengine.demo;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
