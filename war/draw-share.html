@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<!-- Adapted from http://devfiles.myopera.com/articles/649/example2.js -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Draw</title>
+    <style type="text/css"><!--
+      #container { position: relative; }
+      #imageView { border: 1px solid #000; }
+    --></style>
+  </head>
+  <body>
+	
+	<p>
+		<input type="button" value="Clear" id="clearButton"/>		
+		<input type="button" value="Upload" id="uploadButton"/>
+		<input type="button" value="Download" id="downloadButton"/>	
+	</p>
+	
+    <div id="container">
+      <canvas id="imageView" width="400" height="300">
+        <p>Browser doesn't support canvas.</p>
+      </canvas>
+    </div>
+
+	<div id="status">
+		<!-- Status will go here. -->
+	</div>
+
+<script type="text/javascript">
+
+var canvas, context, tool, clearButton;
+
+function init () {
+  // Find the canvas element.
+  canvas = document.getElementById('imageView');
+  if (!canvas) {
+    alert('Error: I cannot find the canvas element!');
+    return;
+  }
+
+  clearButton = document.getElementById('clearButton');
+  uploadButton = document.getElementById('uploadButton');
+  downloadButton = document.getElementById('downloadButton');
+  statusDiv = document.getElementById('status');
+
+  if (!canvas.getContext) {
+    alert('Error: no canvas.getContext!');
+    return;
+  }
+
+  // Get the 2D canvas context.
+  context = canvas.getContext('2d');
+  if (!context) {
+    alert('Error: failed to getContext!');
+    return;
+  }
+
+  // Pencil tool instance.
+  tool = new tool_pencil();
+
+  // Attach the mousedown, mousemove and mouseup event listeners.
+  canvas.addEventListener('mousedown', ev_canvas, false);
+  canvas.addEventListener('mousemove', ev_canvas, false);
+  canvas.addEventListener('mouseup',   ev_canvas, false);
+
+  clearButton.addEventListener('mouseup', clear_canvas, false);
+  uploadButton.addEventListener('mouseup', upload_canvas, false);
+  downloadButton.addEventListener('mouseup', download_canvas, false);
+}
+
+// POST the content of the canvas to the server.
+function upload_canvas() {
+  statusDiv.innerHTML = 'Uploading...';
+  
+  // This retrieves the contents of the canvas as a base64 encoded data URI.
+  image_data = document.getElementById('imageView').toDataURL();
+
+  // Send an XML-RPC POST to the servlet containing the image data.
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open('POST', 'shareImage', true);
+  xmlhttp.onreadystatechange = function() {
+    // readyState 4 corresponds to a completed load.
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+		  statusDiv.innerHTML = xmlhttp.responseText;
+		}
+  }
+  xmlhttp.send(image_data)
+}
+
+// GET whatever the most recently uploaded canvas is from the server.
+function download_canvas() {
+  statusDiv.innerHTML = 'Download...';
+  
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open('GET', 'shareImage', true);
+  xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+		  // Synthesize a new image from the data URI.
+		  server_image = new Image;
+		  
+		  // When the image loads, render it to the canvas.
+		  server_image.onload = function() {
+		    // Render that image on the canvas.
+  		  context.drawImage(server_image, 0, 0);
+
+  		  // Update our status text.
+  		  statusDiv.innerHTML = 'Downloaded at ' + new Date().toString();
+	    }
+	    
+	    // "Load" the image from our local data URL.
+		  server_image.src = xmlhttp.responseText;
+		}
+  }
+  xmlhttp.send()
+}
+
+// Clears the canvas content.
+function clear_canvas() {
+  context.clearRect(0,0,canvas.width,canvas.height);
+  statusDiv.innerHTML = ''
+}
+
+// This painting tool works like a drawing pencil which tracks the mouse 
+// movements.
+function tool_pencil () {
+  var tool = this;
+  this.started = false;
+
+  // This is called when you start holding down the mouse button.
+  // This starts the pencil drawing.
+  this.mousedown = function (ev) {
+      context.beginPath();
+      context.moveTo(ev._x, ev._y);
+      tool.started = true;
+  };
+
+  // This function is called every time you move the mouse. Obviously, it only 
+  // draws if the tool.started state is set to true (when you are holding down 
+  // the mouse button).
+  this.mousemove = function (ev) {
+    if (tool.started) {
+      context.lineTo(ev._x, ev._y);
+      context.stroke();
+    }
+  };
+
+  // This is called when you release the mouse button.
+  this.mouseup = function (ev) {
+    if (tool.started) {
+      tool.mousemove(ev);
+      tool.started = false;
+    }
+  };
+}
+
+// The general-purpose event handler. This function just determines the mouse 
+// position relative to the canvas element.
+function ev_canvas (ev) {
+  if (ev.layerX || ev.layerX == 0) { // Firefox
+    ev._x = ev.layerX;
+    ev._y = ev.layerY;
+  } else if (ev.offsetX || ev.offsetX == 0) { // Opera
+    ev._x = ev.offsetX;
+    ev._y = ev.offsetY;
+  }
+
+  // Call the event handler of the tool.
+  var func = tool[ev.type];
+  if (func) {
+    func(ev);
+  }
+}
+
+init();
+
+</script>
+  </body>
+</html>
+
