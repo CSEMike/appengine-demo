@@ -33,7 +33,7 @@ public class RealtimeServlet extends HttpServlet {
 	  UserService userService = UserServiceFactory.getUserService();
 	  String currentUserId = userService.getCurrentUser().getUserId();
 		
-	    // Read the POST data fully.
+	  // Read the POST data fully.
 		String post = new String(UploadDownloadServlet.readAll(
 				req.getInputStream()));
 		
@@ -44,6 +44,7 @@ public class RealtimeServlet extends HttpServlet {
 		// If this is a request for a new channel, we need to create
 		// a new record for this channel.
 		if (message.get("message").equals("newchannel")) {
+		  
 			// Create a new channel.
 			Key surfaceKey = KeyFactory.createKey("s", currentUserId);
 			String keyString = KeyFactory.keyToString(surfaceKey);
@@ -63,7 +64,9 @@ public class RealtimeServlet extends HttpServlet {
 			responseMap.put("token", token);
 			responseMap.put("key", keyString);			
 			resp.getWriter().println(new Gson().toJson(responseMap));
+			
 		} else if (message.get("message").equals("join")) {
+		  
 			String keyString = message.get("key");
 			String clientId = Double.toString(Math.random());
 			String token = channelService.createChannel(clientId);
@@ -84,7 +87,9 @@ public class RealtimeServlet extends HttpServlet {
       Map<String, String> responseMap = Maps.newHashMap();
       responseMap.put("token", token);
       resp.getWriter().println(new Gson().toJson(responseMap));
+      
 		} else if (message.get("message").equals("draw")) {
+		  
 		  // Load the other participant, if any, associated with this
 		  // surface and relay the stroke.
       DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -110,11 +115,9 @@ public class RealtimeServlet extends HttpServlet {
         } else {
           // There's only one participant, no need to forward.
         }
-        
       } catch (EntityNotFoundException e) {
         throw new IOException(e);
       }
-		  resp.setStatus(HttpServletResponse.SC_OK);
 		}
 	}
 }
