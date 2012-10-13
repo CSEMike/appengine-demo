@@ -18,7 +18,7 @@ import com.google.appengine.api.datastore.Text;
 
 @SuppressWarnings("serial")
 public class UploadDownloadServlet extends HttpServlet {
-	public byte[] readAll(InputStream input) throws IOException {
+	public static byte[] readAll(InputStream input) throws IOException {
 		/// Create a buffer to read at most 2k of data at a time.
 	    byte[] out = new byte[2048];
 	    int read;

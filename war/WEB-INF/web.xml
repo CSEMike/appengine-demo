@@ -20,11 +20,23 @@
 		<servlet-name>UploadDownloadServlet</servlet-name>
 		<url-pattern>/shareImage</url-pattern>
 	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>RealtimeServlet</servlet-name>
+		<servlet-class>com.google.appengine.demo.RealtimeServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>RealtimeServlet</servlet-name>
+		<url-pattern>/shareRealtime</url-pattern>
+	</servlet-mapping>
 	
 	<security-constraint>
         <web-resource-collection>
         	<url-pattern>/shareImage</url-pattern>
             <url-pattern>/draw-share.html</url-pattern>
+
+        	<url-pattern>/shareRealtime</url-pattern>
+            <url-pattern>/draw-realtime.html</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>*</role-name>
@@ -43,4 +55,5 @@
   <servlet-name>SystemServiceServlet</servlet-name>
   <url-pattern>/_ah/spi/*</url-pattern>
  </servlet-mapping>
+ 
 </web-app>
